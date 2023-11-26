@@ -17,9 +17,9 @@ app.use(morgan('combined'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// Substitua 'https://minhaurl' e 'minhaAPIKey' pelos seus dados reais
 const supabase =
-    supabaseClient.createClient('https://minhaurl',
-        'minhaAPIKey');
+    supabaseClient.createClient('https://wubhxqwovvrplzrudmot.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1Ymh4cXdvdnZycGx6cnVkbW90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDA0ODM4MzgsImV4cCI6MjAxNjA1OTgzOH0.WyqmNm7_gio092SRFL_Z0Gzzvj_bNuH3qTosMsZs0FQ');
 
 app.get('/products', async (req, res) => {
     const { data, error } = await supabase
@@ -41,26 +41,29 @@ app.get('/products/:id', async (req, res) => {
 
 app.post('/products', async (req, res) => {
     try {
+        const { name, description, price } = req.body;
+
+        // Verifique se todos os campos necessários estão presentes
+        if (!name || !description || !price) {
+            return res.status(400).send("Todos os campos são obrigatórios.");
+        }
+
         const { error } = await supabase
             .from('products')
             .insert({
-                name: req.body.name,
-                description: req.body.description,
-                price: req.body.price,
+                name,
+                description,
+                price,
             });
 
         if (error) {
-            res.status(500).send(error);
-        } else {
-            res.send("created!!");
+            return res.status(500).send(error.message);
         }
 
-        console.log("retorno " + req.body.name);
-        console.log("retorno " + req.body.description);
-        console.log("retorno " + req.body.price);
+        res.status(201).send("Produto criado com sucesso!");
     } catch (error) {
         console.error(error);
-        res.status(500).send("Internal Server Error");
+        res.status(500).send("Erro interno do servidor");
     }
 });
 
